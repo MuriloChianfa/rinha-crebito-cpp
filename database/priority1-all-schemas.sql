@@ -1,0 +1,34 @@
+-- 
+-- RINHA
+--
+
+CREATE DATABASE IF NOT EXISTS `rinha` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE rinha;
+
+CREATE TABLE clientes (
+  id INT(1) NOT NULL AUTO_INCREMENT,
+  nome VARCHAR(30) NOT NULL,
+  saldo INT(10) NOT NULL DEFAULT 0,
+  limite INT(10) NOT NULL DEFAULT 100000,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+
+CREATE TABLE transacoes (
+  id INT(10) NOT NULL AUTO_INCREMENT,
+  cliente_id INT(1) NOT NULL,
+  valor INT(10) NOT NULL,
+  tipo VARCHAR(1) NOT NULL,
+  descricao VARCHAR(10),
+  realizada_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY cliente_id_fk_idx (cliente_id),
+  CONSTRAINT cliente_id_fk FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+
+INSERT INTO clientes (nome, limite) VALUES
+  ('pedrin', 100000),
+  ('jorge', 80000),
+  ('ana', 1000000),
+  ('tico', 10000000),
+  ('jao', 500000);
+

@@ -1,0 +1,54 @@
+{
+    "db_clients": [
+        {
+            "name":"rinha",
+            "rdbms": "mysql",
+            "host": "127.0.0.1",
+            "port": 3306,
+            "dbname": "rinha",
+            "user": "root",
+            "passwd": "",
+            "is_fast": false,
+            "connection_number": 40,
+            "filename": ""
+        }
+    ],
+    "redis_clients": [],
+    "app": {
+        "number_of_threads": 8,
+        "max_connections": 800,
+        "max_connections_per_ip": 0,
+        "float_precision_in_json": {
+            "precision": 0,
+            "precision_type": "significant"
+        },
+        "log": {
+            "logfile_base_name": "",
+            "log_size_limit": 100000000,
+            "log_level": "DEBUG"
+        },
+        "run_as_daemon": false,
+        "handle_sig_term": true,
+        "relaunch_on_error": false,
+        "use_sendfile": true,
+        "use_gzip": false,
+        "use_brotli": false,
+        "static_files_cache_time": 5,
+        "simple_controllers_map": [],
+        "idle_connection_timeout": 60,
+        "client_max_websocket_message_size": "128K",
+        "reuse_port": false
+    },
+    "plugins": [
+        {
+            "dependencies": [],
+            "config": {
+                "ssl_redirect_exempt": [
+                    ".*\\.jpg"
+                ],
+                "secure_ssl_host": "localhost:8849"
+            }
+        }
+    ],
+    "custom_config": {}
+}
