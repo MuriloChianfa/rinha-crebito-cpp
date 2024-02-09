@@ -1,0 +1,2 @@
+app/CMakeLists.txt linguist-vendored=true
+load-test/user-files/** linguist-vendored=true
