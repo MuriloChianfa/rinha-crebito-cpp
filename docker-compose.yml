@@ -8,25 +8,14 @@ services:
     container_name: rinha-database
     hostname: database
     restart: unless-stopped
-    pull_policy: always
     network_mode: host
     stdin_open: false
     tty: false
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100k"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "healthy"]
-      interval: 5s
-      timeout: 5s
-      retries: 15
-      start_period: 60s
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: "300MB"
+          cpus: "0.6"
+          memory: "400MB"
 
   app-northbound: &app
     build:
@@ -36,7 +25,6 @@ services:
     container_name: rinha-app-northbound
     hostname: app-northbound
     restart: unless-stopped
-    pull_policy: always
     environment:
       - API_PORT=8848
     network_mode: host
@@ -47,8 +35,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.35"
-          memory: "100MB"
+          cpus: "0.3"
+          memory: "50MB"
 
   app-southbound:
     <<: *app
@@ -65,7 +53,6 @@ services:
     container_name: rinha-loadbalancer
     hostname: loadbalancer
     restart: unless-stopped
-    pull_policy: always
     network_mode: host
     depends_on:
       - app-northbound

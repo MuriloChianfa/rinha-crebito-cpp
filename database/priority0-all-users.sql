@@ -1,13 +1,18 @@
 GRANT ALL PRIVILEGES ON *.* TO root;
 SET old_passwords = 0;
 
-CREATE USER 'healthy'@'127.0.0.1' IDENTIFIED BY '';
-
 GRANT ALL PRIVILEGES ON *.* TO 'rinha'@'%';
 FLUSH PRIVILEGES;
 
--- Enabling safe updates
-SET GLOBAL sql_safe_updates = ON;
+-- Disable checks for safe updates
+SET GLOBAL sql_safe_updates = OFF;
 
--- Setting event scheduler off
+-- Setting event scheduler off to reduce memory and cpu footprint
 SET GLOBAL event_scheduler = OFF;
+
+-- Disable fk check to speedup update on clientes table
+SET GLOBAL foreign_key_checks=OFF;
+
+-- Disable unique checks to speedup inserts
+SET GLOBAL unique_checks=OFF;
+

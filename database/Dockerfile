@@ -1,5 +1,5 @@
 # From MySQL fixed version
-FROM mariadb:10.1.48
+FROM mariadb:11.2.2
 
 # Expose default MySQL port
 EXPOSE 3306/tcp
@@ -15,25 +15,6 @@ ENV MYSQL_ALLOW_EMPTY_PASSWORD 1
 ENV MYSQL_USER rinha
 ENV MYSQL_DATABASE rinha
 
-# Fix main image broken
-RUN rm /etc/apt/sources.list.d/mariadb.list
-
-# Install basic dependencies
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-    default-libmysqlclient-dev \
-    ca-certificates \
-    libbsd-dev \
-    pkg-config \
-    unzip \
-    wget \
-    zip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Binding all addresses to MySQL listen
-RUN echo "bind-address = 0.0.0.0" >> /etc/mysql/my.cnf
-
 # Addind all dev scripts to entrypoint
 ADD priority*-all-*.sql /docker-entrypoint-initdb.d/
 
@@ -47,3 +28,4 @@ RUN mkdir -p /var/lib/mysql-files && \
 
 # Adding custom conf to MySQL service
 COPY my.cnf /etc/mysql/my.cnf
+

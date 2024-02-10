@@ -13,7 +13,7 @@ using namespace drogon::orm;
 void Extrato::extrato(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback,
-    std::string id)
+    const std::string id)
 {
     Json::Value json;
     Json::Value& transacoes = json["ultimas_transacoes"];
@@ -70,21 +70,15 @@ void Extrato::extrato(
 void Extrato::transacoes(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback,
-    std::string id)
+    const std::string id)
 {
     auto json = req->getJsonObject();
-    if (!json)
-    {
-        Json::Value err;
-        auto resp = HttpResponse::newHttpJsonResponse(err);
-        resp->setStatusCode(k400BadRequest);
-        callback(resp);
-        return;
-    }
 
-    std::string typ = (*json)["tipo"].asString();
+    const std::string typ = (*json)["tipo"].asString();
+    const std::string descricao = (*json)["descricao"].asString();
+    const int descsize = descricao.size();
 
-    if ((typ != "c" && typ != "d") || (*json)["valor"].asString().find(".") != string::npos || (*json)["descricao"].asString().size() > 10 || (*json)["descricao"].asString().size() < 1 || (*json)["descricao"].asString() == "null")
+    if ((typ != "c" && typ != "d") || (*json)["valor"].asString().find(".") != string::npos || descsize > 10 || descsize < 1 || descricao == "null")
     {
         Json::Value err0;
         auto resp = HttpResponse::newHttpJsonResponse(err0);
@@ -93,7 +87,7 @@ void Extrato::transacoes(
         return;
     }
 
-    int32_t valor = (*json)["valor"].as<int32_t>();
+    const int32_t valor = (*json)["valor"].as<int32_t>();
     auto clientPtr = drogon::app().getDbClient("rinha");
     auto transPtr = clientPtr->newTransaction();
     *transPtr << "SELECT HIGH_PRIORITY saldo, limite FROM clientes WHERE id=? LOCK IN SHARE MODE"
@@ -105,6 +99,7 @@ void Extrato::transacoes(
                         Json::Value err2;
                         auto resp = HttpResponse::newHttpJsonResponse(err2);
                         resp->setStatusCode(k404NotFound);
+                        transPtr->rollback();
                         callback(resp);
                         return;
                     }
@@ -122,8 +117,8 @@ void Extrato::transacoes(
                             Json::Value err3;
                             auto resp = HttpResponse::newHttpJsonResponse(err3);
                             resp->setStatusCode(k422UnprocessableEntity);
-                            callback(resp);
                             transPtr->rollback();
+                            callback(resp);
                             return;
                         }
 
@@ -132,21 +127,22 @@ void Extrato::transacoes(
                     Json::Value payload;
                     payload["saldo"] = saldo;
                     payload["limite"] = result[0]["limite"].as<int>();
-                    callback(HttpResponse::newHttpJsonResponse(payload));
 
                     *transPtr << "UPDATE clientes SET saldo=? WHERE id=?"
                                               << saldo
                                               << id;
+
+                    callback(HttpResponse::newHttpJsonResponse(payload));
                 }
             >> [](const DrogonDbException &e)
                 {
                     std::cerr << "error:" << e.base().what() << std::endl;
                 };
 
-    *clientPtr  << "INSERT LOW_PRIORITY INTO transacoes (cliente_id, tipo, valor, descricao) VALUES (?,?,?,?)"
+    *clientPtr << "INSERT LOW_PRIORITY INTO transacoes (cliente_id, tipo, valor, descricao) VALUES (?,?,?,?)"
             << id
             << typ
             << valor
-            << (*json)["descricao"].asString();
+            << descricao;
 }
 
