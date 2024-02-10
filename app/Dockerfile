@@ -23,6 +23,8 @@ RUN mkdir -p /drogon/app/build
 WORKDIR /drogon/app/build
 COPY . /drogon/app
 
+RUN apt update && apt-get install valgrind kcachegrind graphviz -y
+
 # Compiling drogon app
 RUN cmake .. \
     -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
@@ -31,4 +33,7 @@ RUN cmake .. \
 
 # Init main application
 CMD echo "[+] Starting drogon app..." && \
-    ./app
+    valgrind --tool=callgrind ./app
+
+# Dump: callgrind_control -d PID
+
