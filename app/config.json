@@ -1,18 +1,6 @@
 {
     "db_clients": [
         {
-            "name":"rinhafast",
-            "rdbms": "mysql",
-            "host": "127.0.0.1",
-            "port": 3306,
-            "dbname": "rinha",
-            "user": "root",
-            "passwd": "",
-            "is_fast": true,
-            "connection_number": 2,
-            "filename": ""
-        },
-        {
             "name":"rinha",
             "rdbms": "mysql",
             "host": "127.0.0.1",

@@ -19,7 +19,7 @@ void Extrato::extrato(
     Json::Value& transacoes = json["ultimas_transacoes"];
 
     auto clientPtr = drogon::app().getDbClient("rinha");
-    *clientPtr << "SELECT HIGH_PRIORITY saldo, limite FROM clientes WHERE id=?"
+    *clientPtr << "SELECT saldo, limite FROM clientes WHERE id=?"
             << id << Mode::Blocking
             >> [&callback, &json](const drogon::orm::Result &result)
                 {
@@ -72,13 +72,11 @@ void Extrato::transacoes(
     std::function<void(const HttpResponsePtr &)> &&callback,
     const std::string id)
 {
-    auto json = req->getJsonObject();
-
+    const std::shared_ptr<Json::Value> json = req->getJsonObject();
     const std::string typ = (*json)["tipo"].asString();
     const std::string descricao = (*json)["descricao"].asString();
-    const int descsize = descricao.size();
 
-    if ((typ != "c" && typ != "d") || (*json)["valor"].asString().find(".") != string::npos || descsize > 10 || descsize < 1 || descricao == "null")
+    if ((typ != "c" && typ != "d") || descricao.empty() || descricao.size() > 10 || (*json)["valor"].asString().find(".") != string::npos)
     {
         Json::Value err0;
         auto resp = HttpResponse::newHttpJsonResponse(err0);
@@ -89,9 +87,10 @@ void Extrato::transacoes(
 
     const int32_t valor = (*json)["valor"].as<int32_t>();
     auto clientPtr = drogon::app().getDbClient("rinha");
-    *clientPtr << "SELECT HIGH_PRIORITY saldo, limite FROM clientes WHERE id=? LOCK IN SHARE MODE"
+    auto transPtr = clientPtr->newTransaction();
+    *transPtr << "SELECT HIGH_PRIORITY saldo, limite FROM clientes WHERE id=? FOR UPDATE"
             << id << Mode::Blocking
-            >> [&clientPtr, &callback, &id, &typ, &valor, &descricao](const drogon::orm::Result &result)
+            >> [&transPtr, &callback, &id, &typ, &valor](const drogon::orm::Result &result)
                 {
                     if (result.size() == 0)
                     {
@@ -124,21 +123,22 @@ void Extrato::transacoes(
                     Json::Value payload;
                     payload["saldo"] = saldo;
                     payload["limite"] = result[0]["limite"].as<int>();
-                    callback(HttpResponse::newHttpJsonResponse(payload));
 
-                    *clientPtr << "UPDATE clientes SET saldo=? WHERE id=?"
+                    *transPtr << "UPDATE clientes SET saldo=? WHERE id=?"
                                               << saldo
                                               << id;
 
-                    *clientPtr << "INSERT LOW_PRIORITY INTO transacoes (cliente_id, tipo, valor, descricao) VALUES (?,?,?,?)"
-                            << id
-                            << typ
-                            << valor
-                            << descricao;
-                }
+                    callback(HttpResponse::newHttpJsonResponse(payload));
+                                    }
             >> [](const DrogonDbException &e)
                 {
                     std::cerr << "error:" << e.base().what() << std::endl;
                 };
+
+    *clientPtr << "INSERT LOW_PRIORITY INTO transacoes (cliente_id, tipo, valor, descricao) VALUES (?,?,?,?)"
+                            << id
+                            << typ
+                            << valor
+                            << descricao;
 }
 

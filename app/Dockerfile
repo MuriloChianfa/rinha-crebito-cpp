@@ -31,4 +31,4 @@ RUN cmake .. \
 
 # Init main application
 CMD echo "[+] Starting drogon app..." && \
-    ./app
+    ./app | grep -v "MysqlConnection"
