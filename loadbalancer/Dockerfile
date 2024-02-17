@@ -1,20 +1,33 @@
-# From Nginx fixed version
-FROM macbre/nginx-http3:1.25.2
+# From base drogon framework
+FROM drogonframework/drogon
 
-# Web port
+# Default drogon port
 EXPOSE 9999
-USER root
 
-# Removing default configuration
-RUN rm /etc/nginx/nginx.conf && \
-    rm /etc/nginx/conf.d/* && \
-    rm /var/log/nginx/error.log
+RUN apt update && \
+    apt install --no-install-recommends -y \
+    autoconf \
+    automake \
+    libtool \
+    curl \
+    make \
+    g++ \
+    unzip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Bind error log to stdout
-RUN ln -sf /dev/stdout /var/log/nginx/error.log
+# Set workdir of project
+RUN mkdir -p /drogon/app/build
+WORKDIR /drogon/app/build
+COPY . /drogon/app
 
-# Set master configuration
-COPY nginx.conf /etc/nginx/
+# Compiling drogon app
+RUN cmake .. \
+    -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
+    -DCMAKE_CXX_FLAGS='-pthread -lpthread -fcoroutines -std=c++20' && \
+    make
 
-# Setup init commands
-CMD ["nginx", "-g", "daemon off;"]
+# Init main application
+CMD echo "[+] Starting drogon reverse proxy..." && \
+    ./simple_reverse_proxy
+

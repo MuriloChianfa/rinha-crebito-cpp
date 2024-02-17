@@ -1,0 +1,70 @@
+{
+    "listeners": [{
+        "address": "0.0.0.0",
+        "port": 9999,
+        "https": false
+    }],
+    "app": {
+        "threads_num": 2,
+        "enable_session": false,
+        "session_timeout": 0,
+        "session_cookie_key": "JSESSIONID",
+        "session_max_age": -1,
+        "document_root": "./",
+        "home_page": "index.html",
+        "upload_path": "uploads",
+        "file_types": [
+            "gif",
+            "png",
+            "jpg",
+            "js",
+            "css",
+            "html",
+            "ico",
+            "swf",
+            "xap",
+            "apk",
+            "cur",
+            "xml"
+        ],
+        "max_connections": 100000,
+        "max_connections_per_ip": 0,
+        "load_dynamic_views": false,
+        "dynamic_views_path": [
+            "./views"
+        ],
+        "log": {
+            "logfile_base_name": "",
+            "log_size_limit": 100000000,
+            "log_level": "DEBUG"
+        },
+        "run_as_daemon": false,
+        "handle_sig_term": true,
+        "relaunch_on_error": false,
+        "use_sendfile": true,
+        "use_gzip": true,
+        "static_files_cache_time": 5,
+        "idle_connection_timeout": 60,
+        "server_header_field": "",
+        "enable_server_header": false,
+        "enable_date_header": false,
+        "keepalive_requests": 0,
+        "pipelining_requests": 0,
+        "gzip_static": true,
+        "client_max_body_size": "1M",
+        "client_max_memory_body_size": "64K",
+        "client_max_websocket_message_size": "128K"
+    },
+    "plugins": [{
+        "name": "my_plugin::SimpleReverseProxy",
+        "dependencies": [],
+        "config": {
+            "pipelining": 16,
+            "backends": ["http://127.0.0.1:8848", "http://127.0.0.1:8849"],
+            "same_client_to_same_backend": false,
+            "connection_factor": 4
+        }
+    }],
+    "custom_config": {}
+}
+
