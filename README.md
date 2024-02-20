@@ -8,7 +8,6 @@
 - [C++20](https://en.cppreference.com/w/cpp/20)
 - [Drogon Framework](https://github.com/drogonframework/drogon)
 - [MariaDB](https://mariadb.org/)
-- [NGINX](https://nginx.org/)
 
 ## Rodando o projeto
 
@@ -17,10 +16,17 @@
 docker compose up -d
 ```
 
+- Recompilar as imagens
+```bash
+docker compose build
+```
+
+- Reiniciar os dados dos testes
+```bash
+docker compose down
+```
+
 - Executar os testes
 ```bash
 ./executar-teste-local.sh
 ```
-
-> Para reexecutar os testes após quaisquer alteração, é necessário recompilar as imagens e recriar os containeres!
-
